@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier Scolaire</title>
+    <!-- CSS Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- JavaScript Bootstrap (optional, only if you need Bootstrap JS components) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css' rel='stylesheet' />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/locale/fr.js'></script>
+    <script src="scriptCalendar.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <style>
+        /* Personnalisation du titre du calendrier */
+        .fc-toolbar-title {
+          color: #1047ec; /* Couleur du texte */
+          font-size: 24px; /* Taille de la police */
+          text-transform: uppercase; /* Mettre le texte en majuscules */
+          font-weight: bold; /* Gras */
+        }
+
+        /* Personnalisation des boutons de navigation */
+        .fc-button {
+        
+            background: none; /* Supprimer l
+            border: none; /* Pas de bordure */
+            border-radius: 5px; /* Coins arrondis */
+            padding: 8px 16px; /* Espacement intérieur */
+            font-size: 14px; /* Taille de la police */
+        }
+   
+        #searchSuggestions {
+            position: absolute;
+            top: 100%; /* Position juste en dessous de la zone de recherche */
+            width: calc(100%); /* Largeur égale à 100% de la largeur de son conteneur moins les marges */
+            margin-left: 0px; /* Marge de 5px à gauche */
+            z-index: 999;
+            background-color: #d1f0ff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        
+            overflow-y: auto;
+            padding: 5px;
+        }
+       
+    
+        #searchSuggestions div {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #searchSuggestions div:hover {
+            background-color: #493ac8;
+            color: #fff;
+        }
+    
+        .dropdown-menu .dropdown-item:hover {
+            background-color: #493ac8; /* Nouvelle couleur de fond au survol */
+            color: #fff;
+        }
+
+
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-3"> Calendrier Scolaire</h1>
+        <div class="container">
+            <div class="row justify-content-center mt-3 mb-3">
+                <div class="col-md-8"> <!-- Utilisation de col-md-8 pour que le contenu ne soit pas trop large sur les grands écrans -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <!-- Sélecteur pour choisir le critère de recherche -->
+                                <div class="col-md-3 mb-3">
+                                    <select id="searchCriteria" class="form-select" aria-label="Disabled select example">
+                                        <option value="nom_cours">Nom de la matière</option>
+                                        <option value="code_filiere">Code de la filière</option>
+                                        <option value="categories">Catégories</option>
+                                        <option value="professeurs">Professeur</option>
+                                    </select>
+                                </div>
+      
+                                <!-- Zone de recherche -->
+                                <div class="col-md-5 mb-3">
+                                    <div class="input-group">
+                                        <input type="text" id="searchInput" placeholder="Rechercher..." class="form-control"> <!-- Forcer la largeur à 100% -->
+                                        <div id="searchSuggestions"></div> <!-- Utilisation d'un div pour les suggestions -->
+                                    </div>
+                                </div>
+
+                                <!-- Bouton de recherche -->
+                                <div class="col-md-2 mb-3">
+                                    <button id="searchButton" type="button" class="btn btn-outline-success w-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                        </svg>
+                                        Search
+                                    </button>
+                                </div>
+        
+                                <!-- Bouton d'export -->
+                                <div class="col-md-2 mb-3">
+                                    <button type="button" class="btn btn-primary w-100" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share-fill" viewBox="0 0 16 16">
+                                            <path d="M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5"/>
+                                        </svg>
+                                        Export
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" id="exportPDF">PDF</a></li>
+                                        <li><a class="dropdown-item" href="#" id="exportICalendar">iCalendar</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+       
+        
+        <div id="calendar"></div>
+
+        <!-- Code des couleurs - Catégorie d’événement -->
+        <div class="card mt-3 mb-3"> <!-- Ajout de la classe mt-2 -->
+            <div class="card-header">
+                Code des couleurs - Catégorie d’événement
+            </div>
+            <div class="card-body">
+                <blockquote class="blockquote mb-0">
+                    <p>Explication de code couleurs pour les Catégories d'Événements.</p>
+                    <footer class="blockquote-footer">Ces couleurs sont associées à des catégories spécifiques d'événements pour aider à différencier visuellement les types d'activités  <cite title="Source Title">et événements</cite></footer>
+                </blockquote>
+                <div class="col-auto">  
+                    <img src="CodeCouleurs.png" class="img-fluid" alt="Code de Couleurs" width="50%">
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <script>
+        $(document).ready(function(){
+        // Gérer le clic sur la zone de saisie pour afficher automatiquement la suggestion
+        $('#searchInput').on('click', function(){
+            var searchInput = $(this).val();
+            $.ajax({
+                url: 'suggestions-data.php', // Chemin vers le fichier PHP pour les suggestions
+                type: 'GET',
+                dataType: 'json',
+                data: { searchInput: searchInput },
+                success: function(data){
+                    var suggestionsList = '';
+                    suggestionsList = '<div class="suggestion" data-selectable="false">Saisissez au moins 1 caractère</div>';
+                    $('#searchSuggestions').html(suggestionsList);
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText); // Affichez les erreurs dans la console
+                }
+            });
+        });
+
+        // Gérer la saisie dans la zone de recherche pour afficher les suggestions
+        $('#searchInput').on('input', function(){
+            var searchInput = $(this).val();
+            $.ajax({
+                url: 'suggestions-data.php', // Chemin vers le fichier PHP pour les suggestions
+                type: 'GET',
+                dataType: 'json',
+                data: { searchInput: searchInput },
+                success: function(data){
+                    var suggestionsList = '';
+                    if (searchInput === '') {
+                        suggestionsList = '<div class="suggestion" data-selectable="false">Saisissez au moins 1 caractère</div>';
+                    } else {
+                        var hasSuggestions = false;
+                        for (var key in data) {
+                            if (data.hasOwnProperty(key)) {
+                                data[key].forEach(function(suggestion){
+                                    if (suggestion !== "Saisissez au moins 1 caractère" && suggestion !== "Aucun résultat trouvé") {
+                                        suggestionsList += '<div class="suggestion" data-selectable="true">' + suggestion + '</div>';
+                                        hasSuggestions = true;
+                                    }
+                                });
+                            }
+                        }
+                        if (!hasSuggestions) {
+                            suggestionsList = '<div class="suggestion" data-selectable="false">Aucun résultat trouvé</div>';
+                        }
+                    }
+                    $('#searchSuggestions').html(suggestionsList);
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText); // Affichez les erreurs dans la console
+                }
+            });
+        });
+
+        // Gérer la sélection de la suggestion
+        $(document).on('click', '.suggestion[data-selectable="true"]', function() {
+            var selectedSuggestion = $(this).text();
+            $('#searchInput').val(selectedSuggestion);
+            $('#searchSuggestions').empty(); // Vider les suggestions après la sélection
+        });
+    });
+
+
+    $(document).ready(function() {
+        // Gestionnaire d'événement pour l'export PDF
+        $('#exportPDF').click(function() {
+            window.location.href = 'export-calendar-pdf.php?searchInput=' + $('#searchInput').val() + '&searchCriteria=' + $('#searchCriteria').val();
+        });
+
+        // Gestionnaire d'événement pour l'export iCalendar
+        $('#exportICalendar').click(function() {
+            window.location.href = 'export-calendar-ics.php?searchInput=' + $('#searchInput').val() + '&searchCriteria=' + $('#searchCriteria').val();
+        });
+    });
+    
+</script>
+</body>
+</html>
